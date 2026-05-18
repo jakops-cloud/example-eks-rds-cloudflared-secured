@@ -105,3 +105,4 @@ terragrunt run-all apply
 - **IRSA** — fine-grained IAM roles per Kubernetes service account (External Secrets, EBS/EFS CSI, LBC, Karpenter)
 - **SSL enforced** — RDS connections require TLS (`force_ssl = true`)
 - **Private subnets only** — EKS nodes, RDS, and the tunnel instance run in private subnets
+- 
