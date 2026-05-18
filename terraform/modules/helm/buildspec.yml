@@ -1,0 +1,44 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.9
+    commands:
+      - curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+      - chmod 700 get_helm.sh
+      - ./get_helm.sh
+      - curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+      - chmod +x ./kubectl
+      - mv ./kubectl /usr/local/bin/kubectl
+
+  pre_build:
+    commands:
+      - echo Updating kubeconfig...
+      - aws eks update-kubeconfig --region $AWS_DEFAULT_REGION --name $EKS_CLUSTER_NAME
+      - kubectl get nodes
+
+  build:
+    commands:
+      - echo "Installing secrets-store-csi-driver..."
+      - kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+      - cd $CODEBUILD_SRC_DIR_helm_charts
+
+      - echo "Deploying StorageClasses..."
+      - export EFS_FILE_SYSTEM_ID=$EFS_FILE_SYSTEM_ID
+      - envsubst < templates/storageClassEfs.yaml | kubectl apply -f -
+      - kubectl apply -f templates/storageClass.yaml
+
+      - echo "Deploying argocd..."
+      - helm dep update ./charts/argocd
+      - >
+        helm upgrade -i argocd ./charts/argocd
+        -f ./values/$ENVIRONMENT/argocd.yaml
+        --namespace argocd
+        --create-namespace
+
+      - echo "Deployment complete!"
+  post_build:
+    commands:
+      - echo Deployment completed
