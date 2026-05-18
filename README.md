@@ -4,10 +4,11 @@ A production-ready AWS infrastructure example provisioning an EKS cluster with R
 
 ## Architecture
 
-```        ┌─────────────────────────────────────────┐
+```
+                        ┌──────────────────────────────────────────┐
                         │                  VPC                     │
                         │                                          │
-  Internet/WARP ──────► │  Cloudflare Tunnel (EC2 RHEL 9)         │
+  Internet/WARP ──────► │  Cloudflare Tunnel (EC2 RHEL 9)          │
                         │          │                               │
                         │          ▼                               │
                         │  EKS Cluster (managed node group)        │
@@ -19,7 +20,7 @@ A production-ready AWS infrastructure example provisioning an EKS cluster with R
                         │          ▼                               │
                         │  RDS PostgreSQL (private subnet)         │
                         │  S3 Bucket (KMS encrypted)               │
-                        └─────────────────────────────────────────┘
+                        └──────────────────────────────────────────┘
 ```
 
 All resources are encrypted with a shared **KMS key**. Private access to the cluster is secured exclusively through **Cloudflare WARP + Tunnel** — no public API endpoint is exposed.
